@@ -1,6 +1,7 @@
-import drive
-import directory_entry
-import exception_catcher
+from drive import *
+from directory_entry import *
+from error import *
+from block import *
 
 class Volume:
 
@@ -9,40 +10,37 @@ class Volume:
             self.drive.format()
 
         def format(self):
-            #This dictionary stores the data for block0
-            self.block0 = {}
+            #This this tracks all the blocks
+            self.blocks = []
+            self.blocks.append(Block0());
+            for i in range(0, 127):
+                self.blocks.append(Block());
 
-            self.init_bitmap()
-            self.block0['0'] = self.bitmap;
-            self.block0['1'] = directory_entry()
-            self.block0['2'] = directory_entry()
-            self.block0['3'] = directory_entry()
-            self.block0['4'] = directory_entry()
-            self.block0['5'] = directory_entry()
-            self.block0['6'] = directory_entry()
+            blockInfoToWrite = self.blocks[0].to_string();
+            self.write(blockInfoToWrite, 0)
 
-            var blockInfoToWrite = ""
-            for i in range 0 to 7:
-                blockInfoToWrite.append(''.join(self.block0[i]));
+        def write(self, str_to_write, n):
+            length = len(str_to_write)
+            if (length <= 512):
+                self.drive.write_block(n, self.pad_space(str_to_write));
+            else:
+                noBlocks = length / 512;
+                for i in range(0, noBlocks):
+                    self.drive.write_block(self.blocks[0].find_free_block,self.pad_space(str_to_write[(512*i):(512*(i+1))]));
 
-            #Create 6 directory entries
-            for _ in range(0 to 6):
+        def pad_space(self, str_to_pad):
+            return str_to_pad + ''.join([' '] * (512 - len(str_to_pad)));
 
+        def mkfile(self, fileName):
+            if '/' not in fileName:
+                if ' ' not in fileName:
+                    try:
+                        emptyDirectoryEntry = self.blocks[0].get_empty_dir_entry()
+                        emptyDirectoryEntry.directory_entry_data[1] = emptyDirectoryEntry.verify_and_pad(fileName);
+                        blockInfoToWrite = self.blocks[0].to_string();
+                        self.write(blockInfoToWrite, 0)
 
-            self.drive.write_block(0, )
-
-
-        def init_bitmap(self):
-            self.bitmap = []
-            bitmap.append("+")
-            for _ in range(1, 128):
-                bitmap.append("-")
-
-        def update_bitmap_plus(self, *indexes):
-            for i in index:
-                self.bitmap[i] = "+";
-
-
-        def update_bitmap_minus(self, *indexes):
-            for i in index:
-                self.bitmap[i] = "-";
+                    except Error as e:
+                        raise e;
+                else:
+                    raise NameError("NameError: ", "File name can't contain spaces.")

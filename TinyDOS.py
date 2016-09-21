@@ -1,24 +1,50 @@
-import volume
-import sys
+from error import *
+from volume import *
+import readline
 
 class TinyDOS:
 
-
-
-    @catch_exception_decorator
     def __init__(self):
-        command = raw_input('TinyDOS started. Please enter commands:')
+        self.input = input()
+        while(self.input != 'quit'):
+            self.parse_input()
+            self.input = input()
 
-    @catch_exception_decorator
+    def parse_input(self):
+        splitInput =  self.input.split(' ')
+        if(splitInput[0] == 'format'):
+            #do something
+            self.format(splitInput[1])
+        elif(splitInput[0] == 'mkdir'):
+            pass
+        elif(splitInput[0] == 'reconnect'):
+            pass
+        elif(splitInput[0] == 'ls'):
+            pass
+        elif(splitInput[0] == 'mkfile'):
+            self.mkfile(splitInput[1]);
+        elif(splitInput[0] == 'append'):
+            pass
+        elif(splitInput[0] == 'print'):
+            pass
+        elif(splitInput[0] == 'delfile'):
+            pass
+        elif(splitInput[0] == 'deldir'):
+            pass
+        elif(splitInput[0] == 'quit'):
+            pass
+        else:
+            print("Error: Command not recognised")
+
     def format(self, volumeName):
-        self.volumeName = Volume()
-        self.volumeName.format()
+        self.volume = Volume(volumeName)
+        self.volume.format()
 
+    def mkfile(self, fileName):
+        try:
+            self.volume.mkfile(fileName)
+        except Error as e:
+            print(e.expression, e.message);
 
-    def catch_exception_decorator(function):
-       def decorated_function:
-          try:
-             function()
-         except Error:
-             raise Error
-       return decorated_function
+if __name__ == '__main__':
+    tinydos = TinyDOS()
