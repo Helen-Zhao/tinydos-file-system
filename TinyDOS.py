@@ -24,7 +24,7 @@ class TinyDOS:
         elif(splitInput[0] == 'mkfile'):
             self.mkfile(splitInput[1]);
         elif(splitInput[0] == 'append'):
-            pass
+            self.append(splitInput[1], splitInput[2]);
         elif(splitInput[0] == 'print'):
             pass
         elif(splitInput[0] == 'delfile'):
@@ -32,6 +32,7 @@ class TinyDOS:
         elif(splitInput[0] == 'deldir'):
             pass
         elif(splitInput[0] == 'quit'):
+            #graceful cleanup if needed otherwise delete this 
             pass
         else:
             print("Error: Command not recognised")
@@ -45,6 +46,9 @@ class TinyDOS:
             self.volume.mkfile(fileName)
         except Error as e:
             print(e.expression, e.message);
+
+    def append(self, fileName, data):
+        self.volume.append(fileName, data);
 
 if __name__ == '__main__':
     tinydos = TinyDOS()
