@@ -11,31 +11,55 @@ class TinyDOS:
             self.input = input()
 
     def parse_input(self):
-        splitInput =  self.input.split(' ')
-        if(splitInput[0] == 'format'):
-            #do something
-            self.format(splitInput[1])
-        elif(splitInput[0] == 'mkdir'):
-            pass
-        elif(splitInput[0] == 'reconnect'):
-            self.reconnect(splitInput[1])
-        elif(splitInput[0] == 'ls'):
-            pass
-        elif(splitInput[0] == 'mkfile'):
-            self.mkfile(splitInput[1]);
-        elif(splitInput[0] == 'append'):
-            self.append(splitInput[1], splitInput[2]);
-        elif(splitInput[0] == 'print'):
-            pass
-        elif(splitInput[0] == 'delfile'):
-            pass
-        elif(splitInput[0] == 'deldir'):
-            pass
-        elif(splitInput[0] == 'quit'):
-            #graceful cleanup if needed otherwise delete this
-            pass
-        else:
-            print("Error: Command not recognised")
+        try:
+            splitInput =  self.input.split(' ')
+            if(splitInput[0] == 'format'):
+                #do something
+                self.format(splitInput[1])
+            elif(splitInput[0] == 'mkdir'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                self.mkdir(splitInput[1]);
+            elif(splitInput[0] == 'reconnect'):
+                self.reconnect(splitInput[1])
+            elif(splitInput[0] == 'ls'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                pass
+            elif(splitInput[0] == 'mkfile'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                self.mkfile(splitInput[1]);
+            elif(splitInput[0] == 'append'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                self.append(splitInput[1], splitInput[2]);
+            elif(splitInput[0] == 'print'):
+                if (not hasattr(self,'volume')):
+                    raise DriveFormatError()
+                self.print(splitInput[1]);
+            elif(splitInput[0] == 'delfile'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                pass
+            elif(splitInput[0] == 'deldir'):
+                if (not hasattr(self, 'volume')):
+                    raise DriveFormatError()
+                pass
+            elif(splitInput[0] == 'quit'):
+                #graceful cleanup if needed otherwise delete this
+                pass
+            else:
+                print("Error: Command not recognised")
+        except Error as e:
+            print(e.expression, e.message);
+
+
+    def print(self, file_path):
+        self.volume.print(file_path);
+
+    def mkdir(self, dir_path):
+        self.volume.mkdir(dir_path);
 
     def reconnect(self, volumeName):
         self.volume = Volume(volumeName);

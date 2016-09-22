@@ -2,6 +2,7 @@ from drive import *
 from directory_entry import *
 from error import *
 from block import *
+from directory import *
 
 class Volume:
 
@@ -25,6 +26,13 @@ class Volume:
             for i in range(0, len(idxs)):
                 self.drive.write_block(idxs[i],self.pad_space(str_to_write[(512*i):(512*(i+1))]));
 
+        def print(self, file_path):
+            dir_entry = self.blocks[0].find_file_by_name(file_path);
+            blocks = dir_entry.get_assigned_blocks();
+            output = '';
+            for i in range(0, len(blocks)):
+                output += self.drive.read_block(blocks[i]);
+
         def pad_space(self, str_to_pad):
             return str_to_pad + ''.join([' '] * (512 - len(str_to_pad)));
 
@@ -34,6 +42,13 @@ class Volume:
             for i in range(1, 128):
                 data = self.drive.read_block(i);
                 self.blocks.append(Block(data));
+
+        def mkdir(self, dir_path):
+            if '/' not in dir_path:
+                dir_entry = self.blocks[0].get_empty_dir_entry();
+                dir_entry.directory_entry_data[1] = dir_entry.verify_and_pad(dir_path);
+                dir_entry.directory_entry_data[0] = 'd:';
+                blockInfoToWrite
 
         def mkfile(self, fileName):
             if '/' not in fileName:
@@ -46,7 +61,7 @@ class Volume:
                     except Error as e:
                         raise e;
                 else:
-                    raise NameError("NameError: ", "File name can't contain spaces.")
+                    raise NameError("File name can't contain spaces.")
 
         def append(self, fileName, data):
             if '/' not in fileName:
@@ -57,12 +72,13 @@ class Volume:
                     #get latest empty block
                     #save in free_block_idx var
                     pass
+
                 else:
                     #assign block
-                    free_block_idxs = []
+                    free_block_idxs = set()
                     for _ in range(0, (len(data) // 512) + 1):
-                        free_block_idxs.append(self.blocks[0].find_free_block_idx());
-                        blocks = self.assign_blocks(dir_entry, free_block_idxs, len(data));
+                        free_block_idxs.add(self.blocks[0].find_free_block_idx());
+                        blocks = self.assign_blocks(dir_entry, list(free_block_idxs), len(data));
 
                 #add data values to the end of the block
                 for i in range(0, len(blocks)):

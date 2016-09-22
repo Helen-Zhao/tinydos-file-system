@@ -2,12 +2,16 @@ from error import *
 class directory_entry:
 
 
-    def __init__(self, directory_entry_string):
+    def __init__(self, *directory_entry_string):
         self.directory_entry_data = [];
-        if(directory_entry_string is None):
-            self.init_entry();
+        print('destr', directory_entry_string);
+        if(len(directory_entry_string) > 0):
+            self.parse_entry(directory_entry_string[0]);
+
         else:
-            self.parse_entry(directory_entry_string);
+            print("in init_entry")
+            self.init_entry();
+
 
     def parse_entry(self, string):
         self.directory_entry_data.append(string[0:2]);
@@ -19,6 +23,14 @@ class directory_entry:
             self.directory_entry_data.append(string[count:(count + 4)]);
             count += 4;
 
+        print('str:', string, 'created:', self.to_string())
+
+    def get_assigned_blocks(self):
+        blocks = [];
+        for i in range(4, len(directory_entry_data)):
+            string_block = self.directory_entry_data[i];
+            blocks.append(int(string_block[0:4]));
+            return blocks;
 
     def verify_and_pad(self, name):
         valid = False;
@@ -30,7 +42,7 @@ class directory_entry:
         else:
             raise NameError('Directory Entry name entered ' + name + ', is too long. Max 8 characters.');
 
-    def init_entry(self, name):
+    def init_entry(self):
         self.directory_entry_data.append("f:"); #idx 0
         self.directory_entry_data.append(self.verify_and_pad("")); #idx 1
         self.directory_entry_data.append('0000'); #idx 2
@@ -56,12 +68,13 @@ class directory_entry:
 
         for j in range(0, len(block_idxs)):
             self.directory_entry_data[dir_entry_block] = self.format_block_num(block_idxs[j]);
+            print(block_idxs)
+            print(self.format_block_num(block_idxs[j]));
             dir_entry_block += 1;
             if (dir_entry_block > len(self.directory_entry_data)):
                 raise NoBlocksLeftForFile("This file has no blocks left to assign - All 12 have been used.");
 
     def format_size(self, size):
-        print(''.join(['0'] * (4 - len(str(size)))) + str(size))
         return ''.join(['0'] * (4 - len(str(size)))) + str(size);
 
 
@@ -72,5 +85,5 @@ class directory_entry:
     def to_string(self):
         output = '';
         for i in range(0, len(self.directory_entry_data)):
-            output+=self.directory_entry_data[i];
+            output += self.directory_entry_data[i];
         return output;

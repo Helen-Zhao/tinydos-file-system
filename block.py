@@ -1,16 +1,18 @@
 from volume import *
+from error import *
+import re
 
 class Block:
-    def __init__(self, block_string):
+    def __init__(self, *block_string):
         self.block = [];
 
-        if(block_string is not None):
-            self.parse_block_string(block_string);
+        if(len(block_string) > 0):
+            self.parse_block_string(block_string[0]);
 
     def parse_block_string(self, block_string):
-        pass
-        #TODO
-
+        dir_entries = re.findall('[fd]:........\s[0-9]{4}:[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s', block_string)
+        for i in range(0, len(dir_entries)):
+            self.block.append(directory_entry(dir_entries[i]));
 
     def get_empty_dir_entry(self):
         for i in range(0, len(self.block)):
@@ -19,7 +21,7 @@ class Block:
                 return self.block[i];
                 break;
 
-        raise BlockWriteError("BlockWriteError: ", "No free directory entries in block.")
+        raise BlockWriteError("No free directory entries in block.")
 
     def find_file_by_name(self, fileName):
 
@@ -28,6 +30,8 @@ class Block:
             if (typeOf is directory_entry):
                 if (self.block[i].directory_entry_data[1] == self.block[i].verify_and_pad(fileName)):
                     return self.block[i];
+
+        raise FileDoesNotExistError("No file with name " + fileName + " exists." + self.to_string());
 
 
     def to_string(self):
@@ -46,17 +50,19 @@ class Block:
 
 
 class Block0(Block):
-    def __init__(self, block_string):
-        if(block_string is None):
+    def __init__(self, *block_string):
+        if(len(block_string) < 0):
+            self.block = []
+            self.parse_block_string(block_string[0]);
+
+        else:
+            "in right if for no block string"
             super().__init__()
             self.init_bitmap()
             self.block.append(self.bitmap);
             for _ in range(0, 6):
                 self.block.append(directory_entry())
 
-        else:
-            self.block = []
-            self.parse_block_string(block_string);
 
     def parse_block_string(self, block_string):
         self.bitmap = list(block_string[0:128]);
