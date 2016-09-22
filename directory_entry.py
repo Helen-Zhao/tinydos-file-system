@@ -2,8 +2,23 @@ from error import *
 class directory_entry:
 
 
-    def __init__(self, name):
-        self.init_entry(name);
+    def __init__(self, directory_entry_string):
+        self.directory_entry_data = [];
+        if(directory_entry_string is None):
+            self.init_entry();
+        else:
+            self.parse_entry(directory_entry_string);
+
+    def parse_entry(self, string):
+        self.directory_entry_data.append(string[0:2]);
+        self.directory_entry_data.append(string[2:11]);
+        self.directory_entry_data.append(string[11:15]);
+        self.directory_entry_data.append(string[15:16]);
+        count = 16
+        for i in range(0, 12):
+            self.directory_entry_data.append(string[count:(count + 4)]);
+            count += 4;
+
 
     def verify_and_pad(self, name):
         valid = False;
@@ -11,14 +26,13 @@ class directory_entry:
             if ' ' not in name:
                 return name +''.join([' '] * (9 - len(name)));
             else:
-                raise NameError('Directory Entry name entered', name, 'cannot contain any space characters');
+                raise NameError('Directory Entry name entered ' + name + 'cannot contain any space characters');
         else:
-            raise NameError('Directory Entry name entered', name, 'is too long. Max 8 characters.');
+            raise NameError('Directory Entry name entered ' + name + ', is too long. Max 8 characters.');
 
     def init_entry(self, name):
-        self.directory_entry_data = [];
         self.directory_entry_data.append("f:"); #idx 0
-        self.directory_entry_data.append(self.verify_and_pad(name)); #idx 1
+        self.directory_entry_data.append(self.verify_and_pad("")); #idx 1
         self.directory_entry_data.append('0000'); #idx 2
         self.directory_entry_data.append(':'); #idx 3
         for i in range(0, 12):
@@ -26,8 +40,6 @@ class directory_entry:
         self.isUsed = False;
 
     def has_block_allocated(self):
-        if(self.isUsed == False):
-            return False;
         if(self.directory_entry_data[2] == '0000' and self.directory_entry_data[4] == '000 '):
             return False;
         elif(self.directory_entry_data[4] is not '000 '):

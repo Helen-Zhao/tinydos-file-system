@@ -18,7 +18,7 @@ class TinyDOS:
         elif(splitInput[0] == 'mkdir'):
             pass
         elif(splitInput[0] == 'reconnect'):
-            pass
+            self.reconnect(splitInput[1])
         elif(splitInput[0] == 'ls'):
             pass
         elif(splitInput[0] == 'mkfile'):
@@ -32,10 +32,14 @@ class TinyDOS:
         elif(splitInput[0] == 'deldir'):
             pass
         elif(splitInput[0] == 'quit'):
-            #graceful cleanup if needed otherwise delete this 
+            #graceful cleanup if needed otherwise delete this
             pass
         else:
             print("Error: Command not recognised")
+
+    def reconnect(self, volumeName):
+        self.volume = Volume(volumeName);
+        self.volume.reconnect()
 
     def format(self, volumeName):
         self.volume = Volume(volumeName)

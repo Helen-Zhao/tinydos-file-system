@@ -6,12 +6,14 @@ from block import *
 class Volume:
 
         def __init__(self, volumeName):
+            self.volumeName = volumeName;
             self.drive = Drive(volumeName)
-            self.drive.format()
+            self.blocks = [];
 
         def format(self):
+            self.drive.format()
+
             #This this tracks all the blocks
-            self.blocks = []
             self.blocks.append(Block0());
             for i in range(0, 127):
                 self.blocks.append(Block());
@@ -25,6 +27,13 @@ class Volume:
 
         def pad_space(self, str_to_pad):
             return str_to_pad + ''.join([' '] * (512 - len(str_to_pad)));
+
+        def reconnect(self):
+            self.drive.reconnect();
+            self.blocks.append(Block0(self.drive.read_block(0)));
+            for i in range(1, 128):
+                data = self.drive.read_block(i);
+                self.blocks.append(Block(data));
 
         def mkfile(self, fileName):
             if '/' not in fileName:

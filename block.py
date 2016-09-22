@@ -1,15 +1,23 @@
 from volume import *
 
 class Block:
-    def __init__(self):
-        self.block = []
-        self.directory_entry_data = []
+    def __init__(self, block_string):
+        self.block = [];
+
+        if(block_string is not None):
+            self.parse_block_string(block_string);
+
+    def parse_block_string(self, block_string):
+        pass
+        #TODO
+
 
     def get_empty_dir_entry(self):
         for i in range(0, len(self.block)):
             typeOf = type(self.block[i]);
-            if (typeOf is directory_entry and not self.block[i].isUsed):
+            if (typeOf is directory_entry and self.block[i].directory_entry_data[1] == '         '):
                 return self.block[i];
+                break;
 
         raise BlockWriteError("BlockWriteError: ", "No free directory entries in block.")
 
@@ -38,12 +46,25 @@ class Block:
 
 
 class Block0(Block):
-    def __init__(self):
-        super().__init__()
-        self.init_bitmap()
+    def __init__(self, block_string):
+        if(block_string is None):
+            super().__init__()
+            self.init_bitmap()
+            self.block.append(self.bitmap);
+            for _ in range(0, 6):
+                self.block.append(directory_entry())
+
+        else:
+            self.block = []
+            self.parse_block_string(block_string);
+
+    def parse_block_string(self, block_string):
+        self.bitmap = list(block_string[0:128]);
         self.block.append(self.bitmap);
-        for _ in range(0, 6):
-            self.block.append(directory_entry(""))
+        count = 128;
+        for i in range(0, 6):
+            self.block.append(directory_entry(block_string[count:(count + 64)]));
+            count += 64;
 
     def find_free_block_idx(self):
         for i in range(0, len(self.bitmap)):
