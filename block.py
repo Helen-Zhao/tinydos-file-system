@@ -9,6 +9,10 @@ class Block:
         if(len(block_string) > 0):
             self.parse_block_string(block_string[0]);
 
+    def init_directory(self):
+        for i in range(0, 8):
+            self.block.append(directory_entry())
+
     def parse_block_string(self, block_string):
         dir_entries = re.findall('[fd]:........\s[0-9]{4}:[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s[0-9]{3}\s', block_string)
         for i in range(0, len(dir_entries)):

@@ -24,43 +24,74 @@ class Volume:
 
         def write(self, str_to_write, idxs):
             for i in range(0, len(idxs)):
-                self.drive.write_block(idxs[i], self.pad_space(str_to_write[(512*i):(512*(i+1))]));
+                to_write = str_to_write[(512*i):(512*(i+1))];
+                self.blocks[idxs[i]].block.append(to_write)
+                self.drive.write_block(idxs[i], self.pad_space(to_write));
 
         def parse_path(self, path):
+            #Is root
             if (path == '/'):
                 return (self.blocks[0], '');
 
             split_path = path.split('/');
-            num_paths = len(split_path) - 1;
 
+            if(len(split_path) < 2):
+                raise IndexError
+
+            num_paths = len(split_path) - 1;
+            #Only one level down [in root]
             if(num_paths == 1):
-                #in root_dir_entry
                 return (self.blocks[0], split_path[1]);
             else:
-                root_dir_entry = self.blocks[0].find_file_by_name(split_path[1]);
-                if root_dir_entry.has_block_allocated():
+                print("in dig")
+                return self.dig_through_path(split_path);
 
-                    current_dir_entry = root_dir_entry;
-                    for i in range(2, num_paths)
-                        block_idxs = current_dir_entry.get_assigned_blocks()
-                        found = False;
-                        for i in range(0, len(block_idxs)):
-                            block = self.blocks[block_idxs[i]]
-                            try:
-                                current_dir_entry = block.find_file_by_name(split_path[i]);
-                                latest_block = block;
-                                found = True;
-                                break;
-                            except FileDoesNotExistError:
-                                pass
-                        if not found:
-                            raise FileDoesNotExistError("File or Directory in path " + split_path[i] + " does not exist.")
+        def dig_through_path(self, split_path):
+            current_blocks = [self.blocks[0]];
+            for i in range(1, len(split_path) - 1 ):
+                next_dir_to_find = split_path[i];
+                found = False;
+                for i in range(0, len(current_blocks)):
+                    try:
+                        dir_entry = current_blocks[i].find_file_by_name(next_dir_to_find);
+                        found = True;
+                        print('found dir Entry')
+                        break;
+                    except FileDoesNotExistError:
+                        pass
+                if(found == False):
+                    raise FileDoesNotExistError(next_dir_to_find + " does no exist.")
 
-                    return(latest_block, split_path[num_paths]);
-                        #if file dir entry doesn't exist, throw error
+                print(dir_entry.to_string())
+                print(dir_entry.is_empty())
+                if(dir_entry.has_block_allocated() == False):
+                    #init dir
+                    print('init dir')
+                    block = self.assign_block_to_dir(dir_entry);
+                    return(block, split_path[len(split_path) - 1]);
                 else:
-                    #allocate block to dir, create file
+                    print('fir has assigned')
+                    assigned_block_idxs = dir_entry.get_assigned_blocks();
+                    print(assigned_block_idxs)
+                    current_blocks = [];
+                    for i in range(0, len(assigned_block_idxs)):
+                        current_blocks.append(self.blocks[assigned_block_idxs[i]]);
+                    print(current_blocks)
 
+            return (current_blocks[len(current_blocks) - 1], split_path[len(split_path) - 1]);
+
+
+        def assign_block_to_dir(self, dir_entry):
+            assigned_blocks = self.assign_blocks(dir_entry, self.blocks[0].find_free_block_idx(1), 512);
+            dir_entry.set_size(512);
+            assigned_blocks[0].init_directory();
+            self.write_all_previous_blocks(self.blocks.index(assigned_blocks[0]));
+            return assigned_blocks[0];
+
+
+        def write_all_previous_blocks(self, up_to_block):
+            for i in range(0, up_to_block + 1):
+                self.write(self.blocks[i].to_string(), [i])
 
         def ls(self, dir_name, parent_dir_block):
             if dir_name is '':
@@ -75,7 +106,7 @@ class Volume:
                 print(output);
 
         def print(self, fileName, dir_block):
-            dir_entry = self.blocks[0].find_file_by_name(file_path);
+            dir_entry = dir_block.find_file_by_name(fileName);
             blocks = dir_entry.get_assigned_blocks();
             output = '';
             for i in range(0, len(blocks)):
@@ -99,7 +130,7 @@ class Volume:
         def mkdir(self, dir_name, dir_block):
             dir_entry = dir_block.get_empty_dir_entry();
             dir_entry.change_to_directory(dir_name);
-            self.write(dir_block.to_string(), [self.blocks.index(dir_block)]);
+            self.write_all_previous_blocks(self.blocks.index(dir_block));
 
         def mkfile(self, fileName, dir_block):
             print(fileName, dir_block)
@@ -107,8 +138,7 @@ class Volume:
                 try:
                     emptyDirectoryEntry = dir_block.get_empty_dir_entry()
                     emptyDirectoryEntry.directory_entry_data[1] = emptyDirectoryEntry.verify_and_pad(fileName);
-                    blockInfoToWrite = dir_block.to_string();
-                    self.write(blockInfoToWrite, [self.blocks.index(dir_block)])
+                    self.write_all_previous_blocks(self.blocks.index(dir_block))
                 except Error as e:
                     raise e;
             else:
@@ -117,21 +147,29 @@ class Volume:
         def append(self, fileName, data, dir_block):
                     #find directory entry with a fileName
                 dir_entry = dir_block.find_file_by_name(fileName);
+                print (dir_entry)
+                if dir_entry.directory_entry_data[0] == 'd:':
+                    raise NotFileError()
                 #find latest block with file data OR assign a block if no block assigned
                 if (dir_entry.has_block_allocated()):
                     #get latest empty block
                     #save in free_block_idx var
                     block_idxs = dir_entry.get_assigned_blocks()
                     last_block_idx = block_idxs[len(block_idxs) - 1];
-
+                    print(block_idxs)
                     #read block
-                    existing_data = self.drive.read_block(last_block_idx).rstrip();
+                    existing_data = self.blocks[last_block_idx].block[0];
                     space_left = 512-len(existing_data);
 
                     existing_data += data;
+                    print(existing_data)
                     block_idxs = self.blocks[0].find_free_block_idx(((len(data) - space_left) // 512 )+ 1);
+                    print(((len(data) - space_left) // 512 )+ 1)
+                    print(block_idxs)
+                    dir_entry.assign_blocks(block_idxs, len(existing_data))
                     block_idxs.insert(0, last_block_idx);
                     self.write(existing_data, block_idxs);
+                    self.write_all_previous_blocks(block_idxs[len(block_idxs) - 1]);
 
                 else:
                     #assign block
@@ -146,10 +184,12 @@ class Volume:
                         block.block.append(data);
                         blockInfoToWrite = block.to_string()
                         self.write(blockInfoToWrite, free_block_idxs);
-                        self.write(self.blocks[0].to_string(), [0]);
+                        self.write_all_previous_blocks(free_block_idxs[len(free_block_idxs) - 1]);
+
 
 
         def assign_blocks(self, dir_entry, free_block_idxs, data_len):
+            print(dir_entry.to_string())
             dir_entry.assign_blocks(free_block_idxs, data_len);
             free_blocks = [];
             for i in range (0, len(free_block_idxs)):

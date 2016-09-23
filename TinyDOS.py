@@ -53,8 +53,8 @@ class TinyDOS:
                 print("Error: Command not recognised")
         except Error as e:
             print(e.expression, e.message);
-        except IndexError:
-            print("Error: Please use full path when referencing file/dirs. e.g. A file called 'file' in the root directory will be referenced by '/file'.")
+        # except IndexError:
+        #     print("Error: Please use full path when referencing file/dirs. e.g. A file called 'file' in the root directory will be referenced by '/file'.")
 
     def ls(self, dir_path):
         block_and_name = self.volume.parse_path(dir_path);
@@ -62,10 +62,11 @@ class TinyDOS:
 
     def print(self, file_path):
         block_and_name = self.volume.parse_path(file_path);
-        self.volume.print(block_and_name[1]. block_and_name[0]);
+        self.volume.print(block_and_name[1], block_and_name[0]);
 
     def mkdir(self, dir_path):
         block_and_name = self.volume.parse_path(dir_path);
+        print(block_and_name[0].to_string())
         self.volume.mkdir(block_and_name[1], block_and_name[0]);
 
     def reconnect(self, volumeName):

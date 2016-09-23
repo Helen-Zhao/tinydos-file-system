@@ -65,14 +65,17 @@ class directory_entry:
                 break;
 
         self.directory_entry_data[2] = self.format_size(data_len);
-
+        print(dir_entry_block, 'should be 4')
+        print(block_idxs);
         for j in range(0, len(block_idxs)):
             self.directory_entry_data[dir_entry_block] = self.format_block_num(block_idxs[j]);
-            print(block_idxs)
-            print(self.format_block_num(block_idxs[j]));
+            print('assignment')
             dir_entry_block += 1;
             if (dir_entry_block > len(self.directory_entry_data)):
                 raise NoBlocksLeftForFile("This file has no blocks left to assign - All 12 have been used.");
+
+    def set_size(self, size):
+        self.directory_entry_data[2] = self.format_size(size);
 
     def format_size(self, size):
         return ''.join(['0'] * (4 - len(str(size)))) + str(size);

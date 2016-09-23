@@ -31,3 +31,8 @@ class DriveFormatError(Error):
     def __init__(self):
         self.expression = "DriveFormatError: ";
         self.message = ("Please run format or reconnect before attempting to access a drive.");
+
+class NotFileError(Error):
+    def __init__(self):
+        self.expression = "NotFileError: ";
+        self.message = ("Directories cannot be appended to, only files.");
