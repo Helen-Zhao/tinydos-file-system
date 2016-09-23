@@ -36,3 +36,8 @@ class NotFileError(Error):
     def __init__(self):
         self.expression = "NotFileError: ";
         self.message = ("Directories cannot be appended to, only files.");
+
+class DirectoryNotEmptyError(Error):
+    def __init__(self):
+        self.expression = "DirectoryNotEmptyError: ";
+        self.message = ("Directory couldn't be deleted as it is not empty.");

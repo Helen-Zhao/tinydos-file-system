@@ -41,11 +41,11 @@ class TinyDOS:
             elif(splitInput[0] == 'delfile'):
                 if (not hasattr(self, 'volume')):
                     raise DriveFormatError()
-                pass
+                self.delfile(splitInput[1]);
             elif(splitInput[0] == 'deldir'):
                 if (not hasattr(self, 'volume')):
                     raise DriveFormatError()
-                pass
+                self.deldir(splitInput[1]);
             elif(splitInput[0] == 'quit'):
                 #graceful cleanup if needed otherwise delete this
                 pass
@@ -55,6 +55,14 @@ class TinyDOS:
             print(e.expression, e.message);
         except IndexError:
             print("Error: Please use full path when referencing file/dirs. e.g. A file called 'file' in the root directory will be referenced by '/file'.")
+
+    def deldir(self, file_path):
+        block_and_name = self.volume.parse_path(file_path);
+        self.volume.deldir(block_and_name[1], block_and_name[0]);
+
+    def delfile(self, file_path):
+        block_and_name = self.volume.parse_path(file_path);
+        self.volume.delfile(block_and_name[1], block_and_name[0]);
 
     def ls(self, dir_path):
         block_and_name = self.volume.parse_path(dir_path);

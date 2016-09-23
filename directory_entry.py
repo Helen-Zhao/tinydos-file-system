@@ -10,6 +10,9 @@ class directory_entry:
         else:
             self.init_entry();
 
+    def reset(self):
+        self.directory_entry_data = []
+        self.init_entry();
 
     def parse_entry(self, string):
         self.directory_entry_data.append(string[0:2]);

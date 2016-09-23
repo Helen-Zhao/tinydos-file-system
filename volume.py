@@ -28,6 +28,58 @@ class Volume:
                 self.blocks[idxs[i]].block.append(to_write)
                 self.drive.write_block(idxs[i], self.pad_space(to_write));
 
+        def delfile(self, name, dir_block):
+            #delete data
+            dir_entry = dir_block.find_file_by_name(name);
+            blocks_idxs = dir_entry.get_assigned_blocks();
+            for i in range(0, len(blocks_idxs)):
+                self.blocks[blocks_idxs[i]].wipe_self();
+                self.write(self.blocks[blocks_idxs[i]].to_string(), [blocks_idxs[i]]);
+
+            #reset dir_entry
+            dir_entry.reset()
+            #reset bitmap
+            self.blocks[0].update_bitmap_minus(blocks_idxs);
+
+            #write to disk
+            self.write(self.blocks[0].to_string(), [0]);
+            self.write(dir_block.to_string(), [self.blocks.index(dir_block)]);
+
+        def deldir(self, name, dir_block):
+            dir_entry = dir_block.find_file_by_name(name);
+            print(dir_entry.to_string())
+            blocks_idxs = dir_entry.get_assigned_blocks();
+            dir_is_empty = True;
+            for i in range(0, len(blocks_idxs)):
+                if (self.blocks[blocks_idxs[i]].is_empty() == False):
+                    dir_is_empty = False;
+                    break;
+
+            if (dir_is_empty == False):
+                raise DirectoryNotEmptyError();
+            else:
+                for i in range(0, len(blocks_idxs)):
+                    self.blocks[blocks_idxs[i]].wipe_self()
+                    self.write(self.blocks[blocks_idxs[i]].to_string(), [blocks_idxs[i]]);
+
+            #reset dir_entry
+            dir_entry.reset()
+            #reset bitmap
+            self.blocks[0].update_bitmap_minus(blocks_idxs);
+
+            #write to disk
+            self.write(self.blocks[0].to_string(), [0]);
+            self.write(dir_block.to_string(), [self.blocks.index(dir_block)]);
+
+
+
+            #reset all blocks
+
+            #reset dir Entry
+
+            #update bitmap
+
+
         def parse_path(self, path):
             #Is root
             if (path == '/'):

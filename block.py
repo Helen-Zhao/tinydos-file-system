@@ -61,6 +61,16 @@ class Block:
                     output += self.block[i].to_string() + '\n';
         return output;
 
+    def wipe_self(self):
+        self.block = [];
+
+    def is_empty(self):
+        for i in range(0, len(self.block)):
+            typeOf = type(self.block[i])
+            if (typeOf is directory_entry and (self.block[i].is_empty() == False)):
+                return False;
+
+        return True;
 
 class Block0(Block):
     def __init__(self, *block_string):
@@ -107,5 +117,5 @@ class Block0(Block):
             self.bitmap[i] = "+";
 
     def update_bitmap_minus(self, indexes):
-        for i in index:
+        for i in indexes:
             self.bitmap[i] = "-";
