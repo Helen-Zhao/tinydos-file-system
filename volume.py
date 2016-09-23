@@ -47,7 +47,6 @@ class Volume:
 
         def deldir(self, name, dir_block):
             dir_entry = dir_block.find_file_by_name(name);
-            print(dir_entry.to_string())
             blocks_idxs = dir_entry.get_assigned_blocks();
             dir_is_empty = True;
             for i in range(0, len(blocks_idxs)):
@@ -118,7 +117,6 @@ class Volume:
                     return(block, split_path[len(split_path) - 1]);
                 else:
                     assigned_block_idxs = dir_entry.get_assigned_blocks();
-                    print(assigned_block_idxs)
                     current_blocks = [];
                     for i in range(0, len(assigned_block_idxs)):
                         current_blocks.append(self.blocks[assigned_block_idxs[i]]);
@@ -174,12 +172,10 @@ class Volume:
 
         def mkdir(self, dir_name, dir_block):
             dir_entry = dir_block.get_empty_dir_entry();
-            print(dir_entry.to_string())
             dir_entry.change_to_directory(dir_name);
             self.write_all_previous_blocks(self.blocks.index(dir_block));
 
         def mkfile(self, fileName, dir_block):
-            print(fileName, dir_block)
             if ' ' not in fileName:
                 try:
                     emptyDirectoryEntry = dir_block.get_empty_dir_entry()
@@ -202,16 +198,12 @@ class Volume:
                     #save in free_block_idx var
                     block_idxs = dir_entry.get_assigned_blocks()
                     last_block_idx = block_idxs[len(block_idxs) - 1];
-                    print(block_idxs)
                     #read block
                     existing_data = self.blocks[last_block_idx].block[0];
                     space_left = 512-len(existing_data);
 
                     existing_data += data;
-                    print(existing_data)
                     block_idxs = self.blocks[0].find_free_block_idx(((len(data) - space_left) // 512 )+ 1);
-                    print(((len(data) - space_left) // 512 )+ 1)
-                    print(block_idxs)
                     blocks = self.assign_blocks(dir_entry, block_idxs, len(existing_data))
                     block_idxs.insert(0, last_block_idx);
                     self.write(existing_data, block_idxs);
@@ -235,7 +227,6 @@ class Volume:
 
 
         def assign_blocks(self, dir_entry, free_block_idxs, data_len):
-            print(dir_entry.to_string())
             dir_entry.assign_blocks(free_block_idxs, data_len);
             free_blocks = [];
             for i in range (0, len(free_block_idxs)):

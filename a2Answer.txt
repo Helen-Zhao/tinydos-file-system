@@ -1,0 +1,12 @@
+1. What command must the marker execute to run your TinyOS? Remember that the marker will be redirecting input into your program from a file.
+python3 TinyDOS.py < test_file
+
+2. What is the maximum number of files which can be stored in a TinyOS volume?
+A file here does not mean a directory. You will have to allocate some directories in order to get the maximum number of files. Each file must consist of at least one block of data.
+Show your working and explain why this is the maximum number of files. 
+There are 127 free blocks and 1 root directory that can hold 6 directory entries.
+
+If one directory entry was a directory and the rest files, there will be 13 blocks used for directories (including root) and can hold 5 (one block each) + 8*12 (96) files for a total of 114 blocks. If we swap out a file for a directory, that will give 14 blocks for directories and 100 + 8 files (108). This means a total of 122 blocks are used. If we add another block to that directory, there will be 15 blocks for directories, and remaining space for 113 one-block/files for a total of 128 blocks.
+
+3. Would your solution work correctly with multiple threads? If the answer is yes, explain how this is guaranteed. If the answer is no, describe a sequence of events which would cause a problem.
+No, as most data is stored in memory and calculations/modifications (e.g. appends) are calculated/stored in memory from the reconnect/format and not reread until the next reconnect/format. What's in memory is written to the file. If there were two threads appending to the same file that reconnected/formatted at different times, the first thread to  write to the file will have their changes overwritten by the later, leading to the lost update problem.

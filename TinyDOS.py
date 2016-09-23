@@ -5,10 +5,13 @@ import readline
 class TinyDOS:
 
     def __init__(self):
-        self.input = input()
-        while(self.input != 'quit'):
-            self.parse_input()
+        try:
             self.input = input()
+            while(self.input != 'quit'):
+                self.parse_input()
+                self.input = input()
+        except EOFError:
+            pass
 
     def parse_input(self):
         try:
@@ -74,7 +77,6 @@ class TinyDOS:
 
     def mkdir(self, dir_path):
         block_and_name = self.volume.parse_path(dir_path);
-        print(block_and_name[0].to_string())
         self.volume.mkdir(block_and_name[1], block_and_name[0]);
 
     def reconnect(self, volumeName):

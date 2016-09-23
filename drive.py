@@ -18,11 +18,11 @@ class Drive:
 
     def __init__(self, name):
         '''Create a Drive object.
-        
+
         name - the name of the real file which stores this Drive on the disk
         '''
         self.name = name
-     
+
     def format(self):
         '''Equivalent of a low-level format.
 
@@ -33,17 +33,17 @@ class Drive:
         for n in range(Drive.DRIVE_SIZE):
             separator = Drive.SEPARATOR[:3] + str(n).rjust(4) + Drive.SEPARATOR[7:]
             self.file.write(Drive.EMPTY_BLK + separator)
-    
+
     def reconnect(self):
         '''Reconnect an existing real file as a Drive object.'''
         if not os.path.exists(self.name):
             raise IOError('file does not exist')
         self.file = open(self.name, mode='r+')
-    
+
     def disconnect(self):
         '''Shut the underlying real file down.'''
         self.file.close()
-    
+
     def write_block(self, n, data):
         '''Write "data" to block "n" of the drive.'''
         if n < 0 or n >= Drive.DRIVE_SIZE:
@@ -55,7 +55,7 @@ class Drive:
         self.file.flush()
         if written != Drive.BLK_SIZE:
             raise IOError('incomplete block write')
-        
+
     def read_block(self, n):
         '''Read and return block "n" from the drive.'''
         if n < 0 or n >= Drive.DRIVE_SIZE:
@@ -65,5 +65,3 @@ class Drive:
         if len(data) != Drive.BLK_SIZE:
             raise IOError('incomplete block read')
         return data
-
-

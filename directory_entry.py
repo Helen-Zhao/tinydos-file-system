@@ -24,6 +24,13 @@ class directory_entry:
             self.directory_entry_data.append(string[count:(count + 4)]);
             count += 4;
 
+    def has_no_space(self):
+        for i in range(4, len(self.directory_entry_data)):
+            string_block = self.directory_entry_data[i];
+            if (string_block == '000 '):
+                return False;
+        return True;
+
     def get_assigned_blocks(self):
         blocks = [];
         for i in range(4, len(self.directory_entry_data)):
@@ -68,11 +75,8 @@ class directory_entry:
                 break;
 
         self.directory_entry_data[2] = self.format_size(data_len);
-        print(dir_entry_block, 'should be 4')
-        print(block_idxs);
         for j in range(0, len(block_idxs)):
             self.directory_entry_data[dir_entry_block] = self.format_block_num(block_idxs[j]);
-            print('assignment')
             dir_entry_block += 1;
             if (dir_entry_block > len(self.directory_entry_data)):
                 raise NoBlocksLeftForFile("This file has no blocks left to assign - All 12 have been used.");
