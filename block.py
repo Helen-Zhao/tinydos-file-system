@@ -48,11 +48,20 @@ class Block:
                 pass
         return output;
 
+    def to_string_ignore_empty(self):
+        output = '';
+        for i in range(0, len(self.block)):
+            typeOf = type(self.block[i]);
+            if (typeOf is directory_entry):
+                if (not self.block[i].is_empty()):
+                    output += self.block[i].to_string() + '\n';
+        return output;
+
 
 class Block0(Block):
     def __init__(self, *block_string):
-        if(len(block_string) < 0):
-            self.block = []
+        self.block = []
+        if(len(block_string) > 0):
             self.parse_block_string(block_string[0]);
 
         else:
@@ -72,12 +81,18 @@ class Block0(Block):
             self.block.append(directory_entry(block_string[count:(count + 64)]));
             count += 64;
 
-    def find_free_block_idx(self):
+    def find_free_block_idx(self, n):
+        free_block_idxs = []
+        if (n <= 0):
+            return free_block_idxs;
         for i in range(0, len(self.bitmap)):
             if (self.bitmap[i] == '-'):
-                return i;
+                free_block_idxs.append(i);
+                if len(free_block_idxs) == n:
+                    return free_block_idxs;
 
         raise NoEmptyBlocksError("No empty blocks for storage available")
+
 
     def init_bitmap(self):
         self.bitmap = ['-'] * 128

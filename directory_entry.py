@@ -4,12 +4,10 @@ class directory_entry:
 
     def __init__(self, *directory_entry_string):
         self.directory_entry_data = [];
-        print('destr', directory_entry_string);
         if(len(directory_entry_string) > 0):
             self.parse_entry(directory_entry_string[0]);
 
         else:
-            print("in init_entry")
             self.init_entry();
 
 
@@ -23,14 +21,13 @@ class directory_entry:
             self.directory_entry_data.append(string[count:(count + 4)]);
             count += 4;
 
-        print('str:', string, 'created:', self.to_string())
-
     def get_assigned_blocks(self):
         blocks = [];
-        for i in range(4, len(directory_entry_data)):
+        for i in range(4, len(self.directory_entry_data)):
             string_block = self.directory_entry_data[i];
-            blocks.append(int(string_block[0:4]));
-            return blocks;
+            if (string_block != '000 '):
+                blocks.append(int(string_block[0:4]));
+        return blocks;
 
     def verify_and_pad(self, name):
         valid = False;
@@ -49,7 +46,10 @@ class directory_entry:
         self.directory_entry_data.append(':'); #idx 3
         for i in range(0, 12):
             self.directory_entry_data.append('000 '); #idx 4 - 16
-        self.isUsed = False;
+
+    def change_to_directory(self, name):
+        self.directory_entry_data[1] = self.verify_and_pad(name);
+        self.directory_entry_data[0] = 'd:';
 
     def has_block_allocated(self):
         if(self.directory_entry_data[2] == '0000' and self.directory_entry_data[4] == '000 '):
@@ -87,3 +87,9 @@ class directory_entry:
         for i in range(0, len(self.directory_entry_data)):
             output += self.directory_entry_data[i];
         return output;
+
+    def is_empty(self):
+        if (self.directory_entry_data[1] != '         '):
+            return False;
+        else:
+            return True;

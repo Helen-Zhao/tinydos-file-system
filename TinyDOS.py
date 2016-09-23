@@ -25,7 +25,7 @@ class TinyDOS:
             elif(splitInput[0] == 'ls'):
                 if (not hasattr(self, 'volume')):
                     raise DriveFormatError()
-                pass
+                self.ls(splitInput[1]);
             elif(splitInput[0] == 'mkfile'):
                 if (not hasattr(self, 'volume')):
                     raise DriveFormatError()
@@ -53,13 +53,20 @@ class TinyDOS:
                 print("Error: Command not recognised")
         except Error as e:
             print(e.expression, e.message);
+        except IndexError:
+            print("Error: Please use full path when referencing file/dirs. e.g. A file called 'file' in the root directory will be referenced by '/file'.")
 
+    def ls(self, dir_path):
+        block_and_name = self.volume.parse_path(dir_path);
+        self.volume.ls(block_and_name[1], block_and_name[0]);
 
     def print(self, file_path):
-        self.volume.print(file_path);
+        block_and_name = self.volume.parse_path(file_path);
+        self.volume.print(block_and_name[1]. block_and_name[0]);
 
     def mkdir(self, dir_path):
-        self.volume.mkdir(dir_path);
+        block_and_name = self.volume.parse_path(dir_path);
+        self.volume.mkdir(block_and_name[1], block_and_name[0]);
 
     def reconnect(self, volumeName):
         self.volume = Volume(volumeName);
@@ -69,14 +76,16 @@ class TinyDOS:
         self.volume = Volume(volumeName)
         self.volume.format()
 
-    def mkfile(self, fileName):
+    def mkfile(self, file_path):
         try:
-            self.volume.mkfile(fileName)
+            block_and_name = self.volume.parse_path(file_path)
+            self.volume.mkfile(block_and_name[1], block_and_name[0])
         except Error as e:
             print(e.expression, e.message);
 
-    def append(self, fileName, data):
-        self.volume.append(fileName, data);
+    def append(self, file_path, data):
+        block_and_name = self.volume.parse_path(file_path);
+        self.volume.append(block_and_name[1], data, block_and_name[0]);
 
 if __name__ == '__main__':
     tinydos = TinyDOS()
